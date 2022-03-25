@@ -10,32 +10,24 @@ class UsersListCreateView(APIView):
         try:
             with open('users.json', 'r') as file:
                 users = json.load(file)
+                return Response(users)
         except FileNotFoundError:
-            print('FileNotFoundError')
+            Response('FileNotFoundError')
         except Exception as err:
-            print(err)
-
-        return Response(users)
+            Response(err)
 
     def post(self, *args, **kwargs):
         user = self.request.data
 
         try:
-            with open('users.json', 'r') as users_list:
+            with open('users.json', 'r+') as users_list:
                 users = json.load(users_list)
                 users.append(user)
+                users_list.seek(0)
+                json.dump(users, users_list)
+                return Response('Created')
         except Exception as err:
-            print(err)
-
-        try:
-            with open('users.json', 'w') as new_list:
-                json.dump(users, new_list)
-        except FileNotFoundError:
-            print('FileNotFoundError')
-        except Exception as err:
-            print(err)
-
-        return Response('Created')
+            Response(err)
 
 
 class EmailListCreateView(APIView):
@@ -50,7 +42,7 @@ class EmailListCreateView(APIView):
                     mail = items[3].split('\n')
                     response.append(f'{items[0]} - {mail[0]}')
         except Exception as err:
-            print(err)
+            Response(err)
 
         return Response(response)
 
@@ -63,17 +55,10 @@ class EmailListCreateView(APIView):
                 for line in emails:
                     if gmail in line:
                         new_list.append(line)
+                with open('newEmails.txt', 'w') as file:
+                    file.writelines(new_list)
+            return Response('ok')
         except FileNotFoundError:
-            print('FileNotFoundError')
+            Response('FileNotFoundError')
         except Exception as err:
-            print(err)
-
-        try:
-            with open('newEmails.txt', 'w') as file:
-                file.writelines(new_list)
-        except FileNotFoundError:
-            print('FileNotFoundError')
-        except Exception as err:
-            print(err)
-
-        return Response('ok')
+            Response(err)
